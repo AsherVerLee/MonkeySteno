@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "fnm",
+      "runtimeArgs": ["exec", "--using=24.11.0", "pnpm", "run", "dev-fe"],
+      "port": 3000
+    }
+  ]
+}

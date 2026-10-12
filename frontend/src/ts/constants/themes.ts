@@ -2320,6 +2320,30 @@ export const themes: Record<ThemeName, Theme> = {
     colorfulError: "#b29a91",
     colorfulErrorExtra: "#b29a91",
   },
+  steno_dark: {
+    bg: "#22262a",
+    caret: "#05ad98",
+    main: "#05ad98",
+    sub: "#878787",
+    subAlt: "#2b3035",
+    text: "#e9e6e7",
+    error: "#ff3b3f",
+    errorExtra: "#a82a2d",
+    colorfulError: "#ff3b3f",
+    colorfulErrorExtra: "#a82a2d",
+  },
+  steno_light: {
+    bg: "#ffffff",
+    caret: "#05ad98",
+    main: "#05ad98",
+    sub: "#9a9d9d",
+    subAlt: "#eef0f0",
+    text: "#3b4045",
+    error: "#ff3b3f",
+    errorExtra: "#c22b2e",
+    colorfulError: "#ff3b3f",
+    colorfulErrorExtra: "#c22b2e",
+  },
 };
 
 export type ThemeWithName = Theme & { name: ThemeName };
