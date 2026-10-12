@@ -124,6 +124,7 @@ export const commands: CommandsSubgroup = {
       "stenoMode",
       "stenoHints",
       "stenoMaxKeys",
+      "stenoCoach",
     ),
 
     //sound

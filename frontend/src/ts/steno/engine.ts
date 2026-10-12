@@ -4,9 +4,15 @@ import { onDelete } from "../input/handlers/delete";
 import { emulateInsertText } from "../input/handlers/insert-text";
 import { getInputElement, getInputElementValue } from "../input/input-element";
 import { showErrorNotification } from "../states/notifications";
-import { isTestActive } from "../states/test";
-import { loadDictionary } from "./dictionary";
-import { setLastStroke, setPressedKeys } from "./state";
+import { getActiveWordIndex, isTestActive } from "../states/test";
+import * as TestWords from "../test/test-words";
+import { loadDictionary, LoadedDictionary } from "./dictionary";
+import {
+  resetCoachState,
+  setCoachState,
+  setLastStroke,
+  setPressedKeys,
+} from "./state";
 import { ChordBuilder } from "./chord";
 import { isDeadCode, Stroke, UNDO_STROKE } from "./stroke";
 import { Translator } from "./translator";
@@ -14,6 +20,8 @@ import { Translator } from "./translator";
 const chord = new ChordBuilder();
 
 let translator: Translator | undefined;
+// strokes made so far towards the word being written, for coach mode
+let wordStrokes: Stroke[] = [];
 let queue: Promise<void> = Promise.resolve();
 
 function isChordMode(): boolean {
@@ -71,7 +79,11 @@ async function applyStroke(stroke: Stroke): Promise<void> {
   translator ??= new Translator(dictionary);
 
   // nothing typed yet means a fresh test
-  if (!isTestActive()) translator.reset();
+  if (!isTestActive()) {
+    translator.reset();
+    wordStrokes = [];
+    resetCoachState();
+  }
 
   setLastStroke(stroke);
   const now = performance.now();
@@ -81,8 +93,19 @@ async function applyStroke(stroke: Stroke): Promise<void> {
   if (stroke === UNDO_STROKE) {
     clearWord(now);
     translator.reset();
+    wordStrokes = [];
+    resetCoachState();
     return;
   }
+
+  // with spaces before words, a finished word is still the active one, so
+  // this stroke belongs to the word after it
+  const coach = Config.stenoCoach && Config.mode !== "zen";
+  const inputBefore = getInputElementValue().inputValue;
+  const startsNextWord =
+    inputBefore !== "" && inputBefore === TestWords.words.getCurrent()?.text;
+  const targetIndex = getActiveWordIndex() + (startsNextWord ? 1 : 0);
+  if (startsNextWord || inputBefore === "") wordStrokes = [];
 
   // picking up after a reset mid-test, the word on screen still needs its
   // space before the next one
@@ -102,6 +125,61 @@ async function applyStroke(stroke: Stroke): Promise<void> {
       lastInMultiIndex: i === text.length - 1,
     });
   }
+
+  if (coach && isTestActive()) {
+    coachStroke(dictionary, stroke, targetIndex, now);
+  }
+}
+
+// teaching mode: a stroke that can't lead to the word wipes it straight away,
+// so the learner retries the chord instead of drifting out of step
+function coachStroke(
+  dictionary: LoadedDictionary,
+  stroke: Stroke,
+  targetIndex: number,
+  now: number,
+): void {
+  const word = TestWords.words.get(targetIndex)?.text;
+  const activeIndex = getActiveWordIndex();
+  // a phrase brief ran past the word, nothing sensible to compare against
+  if (word === undefined || activeIndex > targetIndex) {
+    wordStrokes = [];
+    resetCoachState();
+    return;
+  }
+
+  wordStrokes.push(stroke);
+  const input = getInputElementValue().inputValue;
+
+  if (activeIndex === targetIndex && isOnTrack(dictionary, word, input)) {
+    const finished = input === word;
+    if (finished) wordStrokes = [];
+    setCoachState({ strokeIndex: wordStrokes.length, wrong: undefined });
+    return;
+  }
+
+  if (input !== "") clearWord(now);
+  translator?.reset();
+  wordStrokes = [];
+  setCoachState({ strokeIndex: 0, wrong: stroke });
+}
+
+function isOnTrack(
+  dictionary: LoadedDictionary,
+  word: string,
+  input: string,
+): boolean {
+  if (input === word) return true;
+
+  const { strokes: outlines, exact } = dictionary.outlines(word);
+  const followsOutline = outlines.some((outline) =>
+    wordStrokes.every((stroke, i) => outline[i] === stroke),
+  );
+  if (followsOutline) return true;
+
+  // punctuation, capitals and words outside the dictionary take strokes no
+  // outline lists, there the text so far is all there is to go on
+  return !exact && word.startsWith(input);
 }
 
 // empties the word being typed, or the previous one when nothing is typed yet

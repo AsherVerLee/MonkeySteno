@@ -373,6 +373,12 @@ export const commandlineConfigMetadata: CommandlineConfigMetadataObject = {
       options: "fromSchema",
     },
   },
+  stenoCoach: {
+    alias: "stenography teach learn retry",
+    subgroup: {
+      options: "fromSchema",
+    },
+  },
   stenoMaxKeys: {
     alias: "stenography rollover chord size",
     subgroup: {

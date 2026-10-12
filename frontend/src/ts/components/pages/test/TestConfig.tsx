@@ -120,6 +120,17 @@ function PuncAndNum(): JSXElement {
               />
             )}
           </For>
+          <Show when={getConfig.stenoMode === "chord"}>
+            <TCButton
+              fa={configMetadata.stenoCoach.fa}
+              text="coach"
+              active={getConfig.stenoCoach}
+              onClick={() => {
+                setConfig("stenoCoach", !getConfig.stenoCoach);
+                restartTestEvent.dispatch();
+              }}
+            />
+          </Show>
           <Show when={getConfig.stenoMode !== "off"}>
             <TCButton
               fa={configMetadata.stenoMaxKeys.fa}

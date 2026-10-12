@@ -100,6 +100,7 @@ export function SettingsPage(): JSXElement {
             <SearchableAutoSetting key="stenoMode" />
             <SearchableAutoSetting key="stenoHints" />
             <SearchableAutoSetting key="stenoMaxKeys" />
+            <SearchableAutoSetting key="stenoCoach" />
             <SearchableAutoSetting key="freedomMode" />
             <SearchableAutoSetting key="strictSpace" />
             <SearchableAutoSetting key="oppositeShiftMode" />

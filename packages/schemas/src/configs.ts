@@ -455,6 +455,7 @@ export const ConfigSchema = z
     stenoMode: StenoModeSchema,
     stenoHints: z.boolean(),
     stenoMaxKeys: StenoMaxKeysSchema,
+    stenoCoach: z.boolean(),
 
     // sound
     soundVolume: SoundVolumeSchema,

@@ -633,6 +633,15 @@ export const configMetadata: ConfigMetadataObject = {
     description:
       "Shows a steno board diagram with the chord for the current word.",
   },
+  stenoCoach: {
+    key: "stenoCoach",
+    fa: { icon: "fa-chalkboard-teacher" },
+    displayString: "steno coach",
+    changeRequiresRestart: false,
+    group: "input",
+    description:
+      "Teaching mode for chord input. A stroke that doesn't belong to the word clears it instantly so you can try again, and the hint board shows the keys you pressed. Follows the outlines in the dictionary.",
+  },
   stenoMaxKeys: {
     key: "stenoMaxKeys",
     fa: { icon: "fa-hand-paper" },

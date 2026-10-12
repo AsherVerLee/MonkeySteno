@@ -1,5 +1,5 @@
 import Ape from "../ape";
-import { setHintWord } from "../steno/state";
+import { resetCoachState, setHintWord } from "../steno/state";
 import { batch } from "solid-js";
 import * as TestUI from "./test-ui";
 import * as Strings from "../utils/strings";
@@ -585,6 +585,7 @@ async function init(): Promise<boolean> {
   }
 
   setHintWord(TestWords.words.getCurrent()?.text);
+  resetCoachState();
 
   if (Config.keymapMode === "next" && Config.mode !== "zen") {
     highlight(

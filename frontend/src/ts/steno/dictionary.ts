@@ -12,6 +12,11 @@ export type LoadedDictionary = StenoDictionary & {
    * `maxKeys` only accepts outlines whose every stroke has at most that many keys.
    */
   lookup: (word: string, maxKeys?: number) => Outline | undefined;
+  /**
+   * Every outline that writes a test word. `exact` is false when the match
+   * needed punctuation or capitals stripped, so extra strokes are involved.
+   */
+  outlines: (word: string) => { strokes: Stroke[][]; exact: boolean };
 };
 
 let loading: Promise<LoadedDictionary> | undefined;
@@ -69,13 +74,32 @@ export function buildDictionary(raw: Record<string, string>): LoadedDictionary {
     return { text: found.text, strokes: found.strokes };
   };
 
+  const bareForm = (word: string): string =>
+    word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+
   return {
     entries,
     longestOutline,
+    outlines: (word) => {
+      const exact = reverse.get(word);
+      if (exact !== undefined) {
+        return {
+          strokes: exact.map((outline) => outline.strokes),
+          exact: true,
+        };
+      }
+      const bare = bareForm(word);
+      const loose =
+        reverse.get(bare) ??
+        reverse.get(bare.toLowerCase()) ??
+        reverse.get(bare.charAt(0).toUpperCase() + bare.slice(1)) ??
+        [];
+      return { strokes: loose.map((outline) => outline.strokes), exact: false };
+    },
     isWord: (word) => words.has(word),
     lookup: (word, maxKeys = Infinity) => {
       // test words carry punctuation and capitals the dictionary entry won't
-      const bare = word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+      const bare = bareForm(word);
       return (
         find(word, maxKeys) ??
         find(bare, maxKeys) ??

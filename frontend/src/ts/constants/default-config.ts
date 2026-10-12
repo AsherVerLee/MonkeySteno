@@ -92,6 +92,7 @@ const obj: Config = {
   stenoMode: "chord",
   stenoHints: true,
   stenoMaxKeys: "off",
+  stenoCoach: true,
   customBackground: "",
   customBackgroundSize: "cover",
   customBackgroundFilter: [0, 1, 1, 1],
