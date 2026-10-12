@@ -45,6 +45,7 @@ describe("ConfigMeta", () => {
         "lazyMode",
         "layout",
         "codeUnindentOnBackspace",
+        "stenoMode",
       ].sort(),
     );
   });

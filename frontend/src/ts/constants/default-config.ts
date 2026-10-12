@@ -89,6 +89,8 @@ const obj: Config = {
   repeatQuotes: "off",
   resultSaving: true,
   oppositeShiftMode: "off",
+  stenoMode: "chord",
+  stenoHints: true,
   customBackground: "",
   customBackgroundSize: "cover",
   customBackgroundFilter: [0, 1, 1, 1],

@@ -1,4 +1,5 @@
 import { Config } from "../config/store";
+import { setHintWord } from "../steno/state";
 import * as TestWords from "./test-words";
 import { getCurrentInput } from "./events/data";
 import { getLiveCachedAccuracy } from "./events/live-cache";
@@ -1362,6 +1363,8 @@ function afterAnyTestInput(
     setCurrentLiveStats({ acc });
   }
 
+  updateStenoHint();
+
   if (Config.keymapMode === "next") {
     const keyToHighlight =
       TestWords.words.getCurrent()?.textWithCommit[getCurrentInput().length];
@@ -1373,6 +1376,18 @@ function afterAnyTestInput(
   Focus.set(true);
   Caret.stopAnimation();
   Caret.updatePosition();
+}
+
+// steno puts the space before a word, so a finished word stays active until
+// the next stroke - by then the hint should already be on the next word
+function updateStenoHint(): void {
+  const current = TestWords.words.getCurrent();
+  const finished = current !== undefined && getCurrentInput() === current.text;
+  setHintWord(
+    finished
+      ? TestWords.words.get(getActiveWordIndex() + 1)?.text
+      : current?.text,
+  );
 }
 
 export function afterTestTextInput(
@@ -1453,6 +1468,8 @@ export async function afterTestWordChange(
   if (lastBurst !== null && Numbers.isSafeNumber(lastBurst)) {
     setCurrentLiveStats({ burst: Math.round(lastBurst) });
   }
+
+  updateStenoHint();
 
   if (Config.keymapMode === "next") {
     const keyToHighlight =

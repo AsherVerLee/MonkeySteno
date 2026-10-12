@@ -121,6 +121,8 @@ export const commands: CommandsSubgroup = {
       "lazyMode",
       "layout",
       "codeUnindentOnBackspace",
+      "stenoMode",
+      "stenoHints",
     ),
 
     //sound

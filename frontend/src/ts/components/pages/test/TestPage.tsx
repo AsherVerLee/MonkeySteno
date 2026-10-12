@@ -28,6 +28,7 @@ import { Monkey } from "./Monkey";
 import { OutOfFocusWarning } from "./OutOfFocusWarning";
 import { Premid } from "./Premid";
 import { TestResult } from "./result/TestResult";
+import { StenoHints } from "./StenoHints";
 import { TestConfig } from "./TestConfig";
 import { TestInitFailed } from "./TestInitFailed";
 
@@ -162,6 +163,9 @@ function TypingTest(): JSXElement {
 
         <div>
           <CompositionDisplay />
+        </div>
+        <div>
+          <StenoHints />
         </div>
         <div>
           <Keymap />

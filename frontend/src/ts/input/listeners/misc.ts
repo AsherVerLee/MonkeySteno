@@ -2,6 +2,7 @@ import {
   getInputElement,
   moveInputElementCaretToTheEnd,
 } from "../input-element";
+import { cancelChord } from "../../steno/engine";
 
 export function init(signal: AbortSignal): void {
   const inputEl = getInputElement();
@@ -10,6 +11,14 @@ export function init(signal: AbortSignal): void {
     "focus",
     () => {
       moveInputElementCaretToTheEnd();
+    },
+    { signal },
+  );
+
+  inputEl.addEventListener(
+    "blur",
+    () => {
+      cancelChord();
     },
     { signal },
   );

@@ -97,6 +97,8 @@ export function SettingsPage(): JSXElement {
             <CustomPolyglot />
           </Section>
           <Section title="input">
+            <SearchableAutoSetting key="stenoMode" />
+            <SearchableAutoSetting key="stenoHints" />
             <SearchableAutoSetting key="freedomMode" />
             <SearchableAutoSetting key="strictSpace" />
             <SearchableAutoSetting key="oppositeShiftMode" />

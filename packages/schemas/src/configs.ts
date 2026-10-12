@@ -232,6 +232,9 @@ export type MinimumAccuracy = z.infer<typeof MinimumAccuracySchema>;
 export const RepeatQuotesSchema = z.enum(["off", "typing"]);
 export type RepeatQuotes = z.infer<typeof RepeatQuotesSchema>;
 
+export const StenoModeSchema = z.enum(["off", "chord", "plover"]);
+export type StenoMode = z.infer<typeof StenoModeSchema>;
+
 export const OppositeShiftModeSchema = z.enum(["off", "on", "keymap"]);
 export type OppositeShiftMode = z.infer<typeof OppositeShiftModeSchema>;
 
@@ -446,6 +449,8 @@ export const ConfigSchema = z
     lazyMode: z.boolean(),
     layout: LayoutSchema,
     codeUnindentOnBackspace: z.boolean(),
+    stenoMode: StenoModeSchema,
+    stenoHints: z.boolean(),
 
     // sound
     soundVolume: SoundVolumeSchema,

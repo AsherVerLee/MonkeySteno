@@ -22,6 +22,7 @@ import { __nonReactive, setBailedOut, wordsHaveTab } from "../../states/test";
 import { getCustomTextIndicator } from "../../states/core";
 import { logTestEvent } from "../../test/events/data";
 import { getTestEventCode } from "../../test/events/helpers";
+import * as Steno from "../../steno/engine";
 
 export async function handleTab(e: KeyboardEvent, now: number): Promise<void> {
   if (wordsHaveTab() && !e.shiftKey) {
@@ -116,7 +117,8 @@ async function handleFunboxes(
 
 export async function onKeydown(event: KeyboardEvent): Promise<void> {
   if (event.repeat) {
-    // just ignore all repeats
+    // just ignore all repeats, steno keys must not type while held
+    Steno.handleKeydown(event);
     return;
   }
 
@@ -129,6 +131,10 @@ export async function onKeydown(event: KeyboardEvent): Promise<void> {
     alt: event.altKey ? true : undefined,
     meta: event.metaKey ? true : undefined,
   });
+
+  if (Steno.handleKeydown(event)) {
+    return;
+  }
 
   // allow arrows in arrows funbox
   const arrowsActive = Config.funbox.includes("arrows");

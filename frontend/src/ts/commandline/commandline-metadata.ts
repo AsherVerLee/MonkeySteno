@@ -361,6 +361,18 @@ export const commandlineConfigMetadata: CommandlineConfigMetadataObject = {
       options: "fromSchema",
     },
   },
+  stenoMode: {
+    alias: "stenography plover chord",
+    subgroup: {
+      options: "fromSchema",
+    },
+  },
+  stenoHints: {
+    alias: "stenography diagram",
+    subgroup: {
+      options: "fromSchema",
+    },
+  },
   //sound
   soundVolume: {
     subgroup: {

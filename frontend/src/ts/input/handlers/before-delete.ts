@@ -66,6 +66,12 @@ export function onBeforeDelete(event: InputEvent): void {
     return;
   }
 
+  // steno corrections (the undo stroke, or Plover fixing up a multi-stroke
+  // word) need to reach back into words that looked correct a stroke ago
+  if (Config.stenoMode !== "off") {
+    return;
+  }
+
   if (inputIsEmpty && previousWordCorrect) {
     event.preventDefault();
     return;

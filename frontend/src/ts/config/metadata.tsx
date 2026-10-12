@@ -615,6 +615,24 @@ export const configMetadata: ConfigMetadataObject = {
     description:
       "Automatically go back to the previous line when deleting line leading tab characters. Only works in code languages.",
   },
+  stenoMode: {
+    key: "stenoMode",
+    fa: { icon: "fa-keyboard" },
+    displayString: "steno mode",
+    changeRequiresRestart: true,
+    group: "input",
+    description:
+      'How steno input is handled. "chord" reads key chords directly from your keyboard and translates them with the Plover dictionary, no extra software needed. "plover" expects Plover (or a steno board with its own firmware) to do the translating. "off" is regular typing.',
+  },
+  stenoHints: {
+    key: "stenoHints",
+    fa: { icon: "fa-lightbulb" },
+    displayString: "steno hints",
+    changeRequiresRestart: false,
+    group: "input",
+    description:
+      "Shows a steno board diagram with the chord for the current word.",
+  },
 
   // sound
   soundVolume: {
