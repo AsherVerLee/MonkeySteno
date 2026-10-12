@@ -190,11 +190,11 @@ export function AboutPage(): JSXElement {
         <section>
           <H2 fa={{ icon: "fa-info-circle" }} text="about" />
           <p>
-            Monkeytype is a minimalistic and customizable typing test. It
+            Monkeysteno is a minimalistic and customizable typing test. It
             features many test modes, an account system to save your typing
             speed history, and user-configurable features such as themes,
-            sounds, a smooth caret, and more. Monkeytype attempts to emulate the
-            experience of natural keyboard typing during a typing test, by
+            sounds, a smooth caret, and more. Monkeysteno attempts to emulate
+            the experience of natural keyboard typing during a typing test, by
             unobtrusively presenting the text prompts and displaying typed
             characters in-place, providing straightforward, real-time feedback
             on typos, speed, and accuracy.

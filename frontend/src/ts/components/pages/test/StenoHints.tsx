@@ -25,7 +25,7 @@ export function StenoHints(): JSXElement {
     <Show when={enabled()}>
       <div
         data-ui-element="stenoHints"
-        class="flex min-h-36 w-full flex-col items-center gap-2 py-6 text-sm text-sub"
+        class="flex min-h-48 w-full flex-col items-center gap-2 py-6 text-sm text-sub"
       >
         <Show
           when={outline()}
@@ -42,7 +42,7 @@ export function StenoHints(): JSXElement {
                   {(stroke) => <StenoBoard stroke={stroke} />}
                 </For>
               </div>
-              <div class="font-mono text-base text-text">{found().text}</div>
+              <div class="font-mono text-xl text-text">{found().text}</div>
             </>
           )}
         </Show>

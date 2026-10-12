@@ -11,7 +11,7 @@ export function Logo(): JSXElement {
     <a
       href={`${location.origin}/`}
       class="-m-2 flex h-6 w-max gap-2 rounded-[0.8rem] p-2 focus-visible:**:data-[ui-element='logoSubtext']:text-transparent"
-      aria-label="Monkeytype Home"
+      aria-label="Monkeysteno Home"
       router-link
       style={{
         "box-sizing": "content-box",
@@ -59,7 +59,7 @@ export function Logo(): JSXElement {
           })}
           data-ui-element="logoText"
         >
-          monkeytype
+          monkeysteno
         </h1>
       </div>
     </a>

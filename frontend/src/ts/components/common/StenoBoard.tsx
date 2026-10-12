@@ -54,7 +54,7 @@ export function StenoBoard(props: {
   return (
     <svg
       viewBox={`0 0 ${10 * UNIT} ${3.8 * UNIT}`}
-      class={cn("h-auto w-48", props.class)}
+      class={cn("h-auto w-80 max-w-full", props.class)}
       role="img"
     >
       <For each={KEYS}>
