@@ -1,4 +1,5 @@
 import { Config } from "../config/store";
+import { filterWordsByStenoMaxKeys } from "../steno/max-keys";
 import { setConfig, setQuoteLengthAll, toggleFunbox } from "../config/setters";
 import * as CustomText from "./custom-text";
 import { Wordset, FunboxWordsFrequency, withWords } from "./wordset";
@@ -639,7 +640,7 @@ export async function generateWords(
   const wordOrder = getWordOrder();
   console.debug("Word order", wordOrder);
 
-  let wordList = language.words;
+  let wordList = await filterWordsByStenoMaxKeys(language.words);
   if (Config.mode === "custom") {
     wordList = CustomText.getText();
   } else if (Config.mode === "quote") {

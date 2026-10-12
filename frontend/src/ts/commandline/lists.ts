@@ -123,6 +123,7 @@ export const commands: CommandsSubgroup = {
       "codeUnindentOnBackspace",
       "stenoMode",
       "stenoHints",
+      "stenoMaxKeys",
     ),
 
     //sound

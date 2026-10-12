@@ -7,8 +7,11 @@ export type Outline = {
 };
 
 export type LoadedDictionary = StenoDictionary & {
-  /** best outline for a word as it appears in a test, if there is one */
-  lookup: (word: string) => Outline | undefined;
+  /**
+   * Best outline for a word as it appears in a test, if there is one.
+   * `maxKeys` only accepts outlines whose every stroke has at most that many keys.
+   */
+  lookup: (word: string, maxKeys?: number) => Outline | undefined;
 };
 
 let loading: Promise<LoadedDictionary> | undefined;
@@ -35,7 +38,8 @@ async function fetchDictionary(): Promise<LoadedDictionary> {
 export function buildDictionary(raw: Record<string, string>): LoadedDictionary {
   const entries = new Map(Object.entries(raw));
   const words = new Set<string>();
-  const reverse = new Map<string, string>();
+  // outlines per word, best first once sorted
+  const reverse = new Map<string, RankedOutline[]>();
   let longestOutline = 1;
 
   for (const [outline, english] of entries) {
@@ -44,48 +48,71 @@ export function buildDictionary(raw: Record<string, string>): LoadedDictionary {
 
     if (english.includes("{")) continue;
     words.add(english.toLowerCase());
-    const current = reverse.get(english);
-    if (current === undefined || cost(outline) < cost(current)) {
-      reverse.set(english, outline);
+    const ranked = rank(outline);
+    if (ranked === undefined) continue;
+    const outlines = reverse.get(english);
+    if (outlines === undefined) {
+      reverse.set(english, [ranked]);
+    } else {
+      outlines.push(ranked);
     }
   }
+  for (const outlines of reverse.values()) {
+    outlines.sort((a, b) => a.cost - b.cost);
+  }
 
-  const find = (word: string): Outline | undefined => {
-    const outline = reverse.get(word);
-    if (outline === undefined) return undefined;
-    const strokes = outline.split("/").map(parseStroke);
-    if (strokes.includes(undefined)) return undefined;
-    return { text: outline, strokes: strokes as Stroke[] };
+  const find = (word: string, maxKeys: number): Outline | undefined => {
+    const found = reverse
+      .get(word)
+      ?.find((outline) => outline.largestStroke <= maxKeys);
+    if (found === undefined) return undefined;
+    return { text: found.text, strokes: found.strokes };
   };
 
   return {
     entries,
     longestOutline,
     isWord: (word) => words.has(word),
-    lookup: (word) => {
+    lookup: (word, maxKeys = Infinity) => {
       // test words carry punctuation and capitals the dictionary entry won't
       const bare = word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
       return (
-        find(word) ??
-        find(bare) ??
-        find(bare.toLowerCase()) ??
-        find(bare.charAt(0).toUpperCase() + bare.slice(1))
+        find(word, maxKeys) ??
+        find(bare, maxKeys) ??
+        find(bare.toLowerCase(), maxKeys) ??
+        find(bare.charAt(0).toUpperCase() + bare.slice(1), maxKeys)
       );
     },
   };
 }
 
+type RankedOutline = Outline & {
+  cost: number;
+  /** key count of the biggest stroke */
+  largestStroke: number;
+};
+
 // fewer strokes first, then fewer keys, and prefer outlines without the
 // number bar or asterisk
-function cost(outline: string): number {
-  const strokes = outline.split("/");
+function rank(outline: string): RankedOutline | undefined {
+  const texts = outline.split("/");
+  const strokes: Stroke[] = [];
   let keys = 0;
   let penalty = 0;
-  for (const text of strokes) {
+  let largestStroke = 0;
+  for (const text of texts) {
     const stroke = parseStroke(text);
-    if (stroke === undefined) return Number.MAX_SAFE_INTEGER;
-    keys += strokeKeys(stroke).length;
+    if (stroke === undefined) return undefined;
+    strokes.push(stroke);
+    const count = strokeKeys(stroke).length;
+    keys += count;
+    if (count > largestStroke) largestStroke = count;
     if (/[#\d*]/.test(text)) penalty++;
   }
-  return strokes.length * 1000 + penalty * 100 + keys;
+  return {
+    text: outline,
+    strokes,
+    cost: texts.length * 1000 + penalty * 100 + keys,
+    largestStroke,
+  };
 }

@@ -46,6 +46,7 @@ describe("ConfigMeta", () => {
         "layout",
         "codeUnindentOnBackspace",
         "stenoMode",
+        "stenoMaxKeys",
       ].sort(),
     );
   });

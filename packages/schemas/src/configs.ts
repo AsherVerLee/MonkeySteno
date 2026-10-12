@@ -235,6 +235,9 @@ export type RepeatQuotes = z.infer<typeof RepeatQuotesSchema>;
 export const StenoModeSchema = z.enum(["off", "chord", "plover"]);
 export type StenoMode = z.infer<typeof StenoModeSchema>;
 
+export const StenoMaxKeysSchema = z.enum(["off", "2", "3", "4", "5", "6"]);
+export type StenoMaxKeys = z.infer<typeof StenoMaxKeysSchema>;
+
 export const OppositeShiftModeSchema = z.enum(["off", "on", "keymap"]);
 export type OppositeShiftMode = z.infer<typeof OppositeShiftModeSchema>;
 
@@ -451,6 +454,7 @@ export const ConfigSchema = z
     codeUnindentOnBackspace: z.boolean(),
     stenoMode: StenoModeSchema,
     stenoHints: z.boolean(),
+    stenoMaxKeys: StenoMaxKeysSchema,
 
     // sound
     soundVolume: SoundVolumeSchema,

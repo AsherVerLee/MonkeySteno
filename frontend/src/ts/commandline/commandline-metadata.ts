@@ -373,6 +373,12 @@ export const commandlineConfigMetadata: CommandlineConfigMetadataObject = {
       options: "fromSchema",
     },
   },
+  stenoMaxKeys: {
+    alias: "stenography rollover chord size",
+    subgroup: {
+      options: "fromSchema",
+    },
+  },
   //sound
   soundVolume: {
     subgroup: {

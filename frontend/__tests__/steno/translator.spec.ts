@@ -100,3 +100,21 @@ describe("lookup", () => {
     expect(dictionary.lookup("zzzzqq")).toBeUndefined();
   });
 });
+
+describe("lookup with a chord size limit", () => {
+  it("only returns outlines made of small strokes", () => {
+    expect(dictionary.lookup("the", 4)?.text).toBe("-T");
+    for (const word of ["computer", "about", "people", "because"]) {
+      const outline = dictionary.lookup(word, 4);
+      for (const stroke of outline?.strokes ?? []) {
+        expect(
+          stroke.toString(2).replaceAll("0", "").length,
+        ).toBeLessThanOrEqual(4);
+      }
+    }
+  });
+
+  it("returns nothing when every outline is too big", () => {
+    expect(dictionary.lookup("strength", 2)).toBeUndefined();
+  });
+});

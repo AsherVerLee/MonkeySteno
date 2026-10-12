@@ -1,3 +1,4 @@
+import { StenoMaxKeys } from "@monkeytype/schemas/configs";
 import { ComponentProps, For, JSXElement, Show } from "solid-js";
 
 import { configMetadata } from "../../../config/metadata";
@@ -119,11 +120,38 @@ function PuncAndNum(): JSXElement {
               />
             )}
           </For>
+          <Show when={getConfig.stenoMode !== "off"}>
+            <TCButton
+              fa={configMetadata.stenoMaxKeys.fa}
+              text={
+                getConfig.stenoMaxKeys === "off"
+                  ? "any chord"
+                  : `${getConfig.stenoMaxKeys} keys max`
+              }
+              active={getConfig.stenoMaxKeys !== "off"}
+              disabled={getConfig.mode !== "time" && getConfig.mode !== "words"}
+              onClick={() => {
+                const current = stenoMaxKeysCycle.indexOf(
+                  getConfig.stenoMaxKeys,
+                );
+                setConfig(
+                  "stenoMaxKeys",
+                  stenoMaxKeysCycle[
+                    (current + 1) % stenoMaxKeysCycle.length
+                  ] as StenoMaxKeys,
+                );
+                restartTestEvent.dispatch();
+              }}
+            />
+          </Show>
         </div>
       </AnimeShow>
     </Anime>
   );
 }
+
+// the test config bar steps through these on click
+const stenoMaxKeysCycle: StenoMaxKeys[] = ["off", "4", "3", "5", "6"];
 
 function Mode(): JSXElement {
   const modeOptions = ["time", "words", "quote", "zen", "custom"] as const;

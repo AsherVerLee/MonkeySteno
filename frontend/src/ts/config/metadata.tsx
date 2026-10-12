@@ -633,6 +633,15 @@ export const configMetadata: ConfigMetadataObject = {
     description:
       "Shows a steno board diagram with the chord for the current word.",
   },
+  stenoMaxKeys: {
+    key: "stenoMaxKeys",
+    fa: { icon: "fa-hand-paper" },
+    displayString: "steno max keys",
+    changeRequiresRestart: true,
+    group: "input",
+    description:
+      "Only use words that can be written with chords of this many keys or fewer, and hint those chords. Useful on keyboards without n-key rollover. Applies to the time and words modes.",
+  },
 
   // sound
   soundVolume: {

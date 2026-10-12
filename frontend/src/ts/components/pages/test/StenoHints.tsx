@@ -2,6 +2,7 @@ import { createMemo, createResource, For, JSXElement, Show } from "solid-js";
 
 import { getConfig } from "../../../config/store";
 import { loadDictionary } from "../../../steno/dictionary";
+import { getStenoMaxKeys } from "../../../steno/max-keys";
 import { getHintWord } from "../../../steno/state";
 import { StenoBoard } from "../../common/StenoBoard";
 
@@ -18,7 +19,7 @@ export function StenoHints(): JSXElement {
   const outline = createMemo(() => {
     const word = getHintWord();
     if (word === undefined) return undefined;
-    return dictionary()?.lookup(word);
+    return dictionary()?.lookup(word, getStenoMaxKeys());
   });
 
   return (

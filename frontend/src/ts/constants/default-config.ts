@@ -91,6 +91,7 @@ const obj: Config = {
   oppositeShiftMode: "off",
   stenoMode: "chord",
   stenoHints: true,
+  stenoMaxKeys: "off",
   customBackground: "",
   customBackgroundSize: "cover",
   customBackgroundFilter: [0, 1, 1, 1],
