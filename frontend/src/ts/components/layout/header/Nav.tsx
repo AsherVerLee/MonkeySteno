@@ -11,10 +11,7 @@ import { usePendingConnectionsQuery } from "../../../collections/connections";
 import { restartTestEvent } from "../../../events/test";
 import { createEffectOn } from "../../../hooks/effects";
 import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
-import {
-  prefetchAboutPage,
-  prefetchLeaderboardPage,
-} from "../../../queries/prefetch";
+import { prefetchLeaderboardPage } from "../../../queries/prefetch";
 import { getServerConfigurationQueryOptions } from "../../../queries/server-configuration";
 import { getActivePage } from "../../../states/core";
 import {
@@ -111,22 +108,6 @@ export function Nav(): JSXElement {
         href="/leaderboards"
         onMouseEnter={() => {
           prefetchLeaderboardPage();
-        }}
-      />
-      <Button
-        variant="text"
-        fa={{
-          icon: "fa-info",
-          fixedWidth: true,
-        }}
-        class={buttonClass()}
-        dataset={{
-          "data-nav-item": "about",
-        }}
-        href="/about"
-        router-link
-        onMouseEnter={() => {
-          prefetchAboutPage();
         }}
       />
       <Button
