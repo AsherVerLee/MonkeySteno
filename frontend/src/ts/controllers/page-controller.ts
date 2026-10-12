@@ -82,6 +82,7 @@ const pages = {
     },
   }),
   about: solidPage("about"),
+  lessons: solidPage("lessons"),
   account: solidPage("account", {
     loadingOptions: {
       loadingMode: () => {

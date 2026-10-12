@@ -26,12 +26,12 @@ const commands: Command[] = [
     },
   },
   {
-    id: "viewAbout",
-    display: "View About Page",
-    alias: "navigate go to",
-    icon: "fa-info",
+    id: "viewLessons",
+    display: "View Lessons Page",
+    alias: "navigate go to steno theory curriculum",
+    icon: "fa-graduation-cap",
     exec: (): void => {
-      void navigate("/about");
+      void navigate("/lessons");
     },
   },
   {

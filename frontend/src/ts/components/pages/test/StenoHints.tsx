@@ -3,7 +3,7 @@ import { createMemo, createResource, For, JSXElement, Show } from "solid-js";
 import { getConfig } from "../../../config/store";
 import { loadDictionary } from "../../../steno/dictionary";
 import { getStenoMaxKeys } from "../../../steno/max-keys";
-import { getHintWord } from "../../../steno/state";
+import { getHintWord, getPressedKeys } from "../../../steno/state";
 import { StenoBoard } from "../../common/StenoBoard";
 
 // longer outlines are shown as text only
@@ -40,7 +40,14 @@ export function StenoHints(): JSXElement {
             <>
               <div class="flex flex-wrap justify-center gap-4">
                 <For each={found().strokes.slice(0, MAX_BOARDS)}>
-                  {(stroke) => <StenoBoard stroke={stroke} />}
+                  {(stroke) => (
+                    <StenoBoard
+                      stroke={stroke}
+                      mistakes={
+                        found().strokes.length === 1 ? getPressedKeys() : 0
+                      }
+                    />
+                  )}
                 </For>
               </div>
               <div class="font-mono text-xl text-text">{found().text}</div>

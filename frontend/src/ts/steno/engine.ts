@@ -2,17 +2,16 @@ import { Config } from "../config/store";
 import { onBeforeDelete } from "../input/handlers/before-delete";
 import { onDelete } from "../input/handlers/delete";
 import { emulateInsertText } from "../input/handlers/insert-text";
-import { getInputElement } from "../input/input-element";
+import { getInputElement, getInputElementValue } from "../input/input-element";
 import { showErrorNotification } from "../states/notifications";
 import { isTestActive } from "../states/test";
 import { loadDictionary } from "./dictionary";
-import { setLastStroke } from "./state";
-import { codeToStenoKey, isDeadCode, keyBit, Stroke } from "./stroke";
+import { setLastStroke, setPressedKeys } from "./state";
+import { ChordBuilder } from "./chord";
+import { isDeadCode, Stroke, UNDO_STROKE } from "./stroke";
 import { Translator } from "./translator";
 
-// physical keys currently held, and the chord they have built up so far
-const held = new Set<string>();
-let chord: Stroke = 0;
+const chord = new ChordBuilder();
 
 let translator: Translator | undefined;
 let queue: Promise<void> = Promise.resolve();
@@ -29,8 +28,7 @@ function hasModifier(event: KeyboardEvent): boolean {
 export function handleKeydown(event: KeyboardEvent): boolean {
   if (!isChordMode() || hasModifier(event)) return false;
 
-  const key = codeToStenoKey(event.code);
-  if (key === undefined) {
+  if (!chord.down(event.code)) {
     if (isDeadCode(event.code)) {
       event.preventDefault();
       return true;
@@ -42,17 +40,16 @@ export function handleKeydown(event: KeyboardEvent): boolean {
   }
 
   event.preventDefault();
-  held.add(event.code);
-  chord |= keyBit(key);
+  setPressedKeys(chord.current());
   return true;
 }
 
 export function handleKeyup(event: KeyboardEvent): boolean {
-  if (!held.delete(event.code)) return false;
+  const { handled, stroke } = chord.up(event.code);
+  if (!handled) return false;
 
-  if (held.size === 0 && chord !== 0) {
-    const stroke = chord;
-    chord = 0;
+  if (stroke !== undefined) {
+    setPressedKeys(0);
     queue = queue
       .then(async () => applyStroke(stroke))
       .catch((error: unknown) => {
@@ -65,8 +62,8 @@ export function handleKeyup(event: KeyboardEvent): boolean {
 
 /** Drop a half-built chord, e.g. when the input loses focus mid-stroke. */
 export function cancelChord(): void {
-  held.clear();
-  chord = 0;
+  chord.cancel();
+  setPressedKeys(0);
 }
 
 async function applyStroke(stroke: Stroke): Promise<void> {
@@ -77,8 +74,23 @@ async function applyStroke(stroke: Stroke): Promise<void> {
   if (!isTestActive()) translator.reset();
 
   setLastStroke(stroke);
-  const { backspaces, text } = translator.stroke(stroke);
   const now = performance.now();
+
+  // the asterisk starts the word over: one clean slate is easier to recover
+  // from than undoing stroke by stroke once the output has drifted
+  if (stroke === UNDO_STROKE) {
+    clearWord(now);
+    translator.reset();
+    return;
+  }
+
+  // picking up after a reset mid-test, the word on screen still needs its
+  // space before the next one
+  if (translator.isFresh() && getInputElementValue().inputValue !== "") {
+    await emulateInsertText({ data: " ", now });
+  }
+
+  const { backspaces, text } = translator.stroke(stroke);
 
   for (let i = 0; i < backspaces; i++) {
     if (!emulateDelete(now)) break;
@@ -89,6 +101,14 @@ async function applyStroke(stroke: Stroke): Promise<void> {
       now,
       lastInMultiIndex: i === text.length - 1,
     });
+  }
+}
+
+// empties the word being typed, or the previous one when nothing is typed yet
+function clearWord(now: number): void {
+  if (getInputElementValue().inputValue === "" && !emulateDelete(now)) return;
+  while (getInputElementValue().inputValue !== "") {
+    if (!emulateDelete(now)) return;
   }
 }
 

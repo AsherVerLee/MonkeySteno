@@ -39,6 +39,11 @@ export class Translator {
     this.output = "";
   }
 
+  /** True when no strokes are held in history. */
+  isFresh(): boolean {
+    return this.translations.length === 0;
+  }
+
   stroke(stroke: Stroke): OutputChange {
     if (stroke === UNDO_STROKE) {
       this.undo();

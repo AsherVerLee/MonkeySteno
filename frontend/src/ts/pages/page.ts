@@ -10,6 +10,7 @@ export type PageName =
   | "test"
   | "settings"
   | "about"
+  | "lessons"
   | "account"
   | "login"
   | "profile"

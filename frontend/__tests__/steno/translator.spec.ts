@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { buildDictionary } from "../../src/ts/steno/dictionary";
+import { lessons } from "../../src/ts/steno/lessons";
 import {
   parseStroke,
   strokeFromKeys,
@@ -116,5 +117,29 @@ describe("lookup with a chord size limit", () => {
 
   it("returns nothing when every outline is too big", () => {
     expect(dictionary.lookup("strength", 2)).toBeUndefined();
+  });
+});
+
+describe("lessons", () => {
+  const drills = lessons.flatMap((lesson) => lesson.drills);
+  const charts = lessons.flatMap((lesson) =>
+    lesson.sections.flatMap((section) => section.chart ?? []),
+  );
+
+  it("only uses valid strokes", () => {
+    for (const { stroke } of [...drills, ...charts]) {
+      expect(parseStroke(stroke), stroke).toBeDefined();
+      expect(strokeToString(parseStroke(stroke) as number)).toBe(stroke);
+    }
+  });
+
+  it("teaches outlines the dictionary agrees with", () => {
+    for (const drill of drills) {
+      if (drill.word === undefined) continue;
+      expect(dictionary.entries.get(drill.stroke), drill.stroke).toBe(
+        drill.word,
+      );
+    }
+    expect(dictionary.entries.get("KATS")).toBe("cats");
   });
 });
