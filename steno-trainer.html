@@ -1,0 +1,492 @@
+<title>Steno Finger Trainer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column — controls, the prompt, the keyboard directly under it, then tape + score. */
+:root {
+  --bg: #e9edf1;
+  --surface: #f8fafb;
+  --ink: #17212c;
+  --muted: #5a6877;
+  --line: #cbd3db;
+  --deck: #c3ccd5;
+  --key: #fdfeff;
+  --key-off: #dbe1e7;
+  --lit: #ffd23f;
+  --lit-ink: #2a2000;
+  --good: #1f9d62;
+  --bad: #d6453d;
+  --on-state: #ffffff;
+  --accent: #1d5fa8;
+  --f-pinky: #7a5cc2;
+  --f-ring: #2f7fd1;
+  --f-middle: #169a8a;
+  --f-index: #c8508f;
+  --f-thumb: #d0732a;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171d; --surface: #1a212a; --ink: #e6ecf2; --muted: #93a1b0; --line: #2f3945;
+    --deck: #0b0f14; --key: #2a3440; --key-off: #1a212a; --lit: #ffd23f; --lit-ink: #2a2000;
+    --good: #2bb673; --bad: #e5574f; --on-state: #ffffff; --accent: #6fb0f2;
+    --f-pinky: #a48be6; --f-ring: #5aa5ee; --f-middle: #35c2b0; --f-index: #e57bb3; --f-thumb: #ea9550;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171d; --surface: #1a212a; --ink: #e6ecf2; --muted: #93a1b0; --line: #2f3945;
+  --deck: #0b0f14; --key: #2a3440; --key-off: #1a212a; --lit: #ffd23f; --lit-ink: #2a2000;
+  --good: #2bb673; --bad: #e5574f; --on-state: #ffffff; --accent: #6fb0f2;
+  --f-pinky: #a48be6; --f-ring: #5aa5ee; --f-middle: #35c2b0; --f-index: #e57bb3; --f-thumb: #ea9550;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: flex; flex-direction: column; gap: 16px; }
+
+header { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; justify-content: space-between; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+label.field { display: flex; flex-direction: column; gap: 3px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+select { font: 500 14px var(--sans); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; max-width: 100%; }
+.lessons { display: flex; flex-wrap: wrap; gap: 6px; }
+.lessons button { font: 500 13px var(--sans); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.lessons button:hover { border-color: var(--accent); }
+.lessons button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.lessons button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+label.check { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ink); cursor: pointer; }
+select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.about { margin: 0; color: var(--muted); max-width: 68ch; }
+
+/* Prompt */
+.prompt { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; min-height: 190px; justify-content: center; transition: border-color .15s; }
+.prompt.ok { border-color: var(--good); }
+.prompt.miss { border-color: var(--bad); }
+.count { font: 500 12px var(--mono); color: var(--muted); }
+.word { font-size: clamp(40px, 9vw, 64px); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.note { color: var(--muted); font-size: 14px; min-height: 1.4em; }
+.stroke { font: 600 22px var(--mono); letter-spacing: 0.08em; min-height: 1.5em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 26px; }
+.chip { font-size: 12.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; }
+.chip code { font: 600 12.5px var(--mono); color: var(--ink); margin-right: 5px; }
+.msg { font-size: 14px; min-height: 1.5em; font-weight: 500; }
+.msg.ok { color: var(--good); }
+.msg.miss { color: var(--bad); }
+.msg code { font: 600 14px var(--mono); }
+
+/* Keyboard */
+.kb { container-type: inline-size; }
+.deck { background: var(--deck); border-radius: 2cqw; padding: 1.5cqw; display: flex; flex-direction: column; gap: 0.8cqw; }
+.row { display: flex; gap: 0.8cqw; }
+.key { flex: var(--u, 1) 1 0; min-width: 0; height: 6cqw; border-radius: 0.9cqw; background: var(--key-off); color: var(--muted); position: relative; display: grid; place-items: center; font: 400 1.5cqw var(--sans); overflow: hidden; }
+.key.steno { background: var(--key); color: var(--ink); border-bottom: 0.6cqw solid var(--f); }
+.key.steno b { font: 600 2.9cqw var(--mono); }
+.key.steno i { position: absolute; top: 0.3cqw; left: 0.6cqw; font: 400 1.35cqw var(--sans); color: var(--muted); font-style: normal; }
+.key.target { background: var(--lit); color: var(--lit-ink); }
+.key.target i { color: var(--lit-ink); }
+.key.alt { outline: 0.35cqw dashed var(--lit); outline-offset: -0.5cqw; }
+.key.down.hit { background: var(--good); color: var(--on-state); }
+.key.down.wrong { background: var(--bad); color: var(--on-state); }
+.key.down i { color: var(--on-state); }
+
+.fingers { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; align-items: center; }
+.fchip { font-size: 13px; border-radius: 6px; padding: 3px 9px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--f); }
+.fchip kbd { font: 600 13px var(--mono); margin-left: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 6px; border-radius: 2px; background: var(--f); display: inline-block; }
+.sw.lit { height: 12px; background: var(--lit); }
+.sw.dash { height: 12px; background: transparent; border: 2px dashed var(--lit); }
+
+/* Tape + score */
+.lower { display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch; }
+.tape { flex: 1 1 320px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.lower h2, details summary { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 0 0 8px; }
+.tape-rows { display: flex; flex-direction: column; gap: 2px; min-height: 148px; justify-content: flex-end; overflow-x: auto; }
+.trow { display: flex; align-items: center; gap: 12px; font: 500 13px var(--mono); white-space: nowrap; }
+.trow .cols { display: grid; grid-template-columns: repeat(22, 1.05em); border-inline: 1px solid var(--line); padding-inline: 6px; }
+.trow .cols span { text-align: center; }
+.trow.miss .cols { color: var(--bad); }
+.trow .lbl { font: 400 12.5px var(--sans); color: var(--muted); }
+.tape-empty { color: var(--muted); font-size: 13px; }
+.score { flex: 0 1 220px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.score dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; }
+.score dt { color: var(--muted); }
+.score dd { margin: 0; font: 600 15px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+details summary { cursor: pointer; margin: 0; }
+details ul { margin: 10px 0 0; padding-left: 18px; max-width: 70ch; display: flex; flex-direction: column; gap: 6px; }
+details kbd { font: 600 13px var(--mono); background: var(--key-off); border-radius: 4px; padding: 0 5px; }
+@media (prefers-reduced-motion: reduce) { .prompt { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Steno Finger Trainer</h1>
+    <div class="controls">
+      <label class="check" for="hints"><input type="checkbox" id="hints" checked> Show which keys to press</label>
+      <label class="check" for="roll"><input type="checkbox" id="roll"> One key at a time</label>
+    </div>
+  </header>
+
+  <nav class="lessons" id="lesson" aria-label="Lessons"></nav>
+
+  <p class="about" id="about"></p>
+
+  <section class="prompt" id="prompt" aria-live="polite">
+    <div class="count" id="count"></div>
+    <div class="word" id="word"></div>
+    <div class="note" id="note"></div>
+    <div class="stroke" id="stroke"></div>
+    <div class="chips" id="chips"></div>
+    <div class="msg" id="msg"></div>
+  </section>
+
+  <section class="kb" aria-label="Keyboard showing steno keys">
+    <div class="deck" id="deck"></div>
+  </section>
+
+  <div class="fingers" id="fingers"></div>
+  <div class="legend">
+    <span><i class="sw lit"></i>press this</span>
+    <span><i class="sw dash"></i>this key works too</span>
+    <span><i class="sw" style="--f:var(--f-pinky)"></i>pinky</span>
+    <span><i class="sw" style="--f:var(--f-ring)"></i>ring</span>
+    <span><i class="sw" style="--f:var(--f-middle)"></i>middle</span>
+    <span><i class="sw" style="--f:var(--f-index)"></i>index</span>
+    <span><i class="sw" style="--f:var(--f-thumb)"></i>thumb</span>
+  </div>
+
+  <div class="lower">
+    <section class="tape">
+      <h2>Paper tape</h2>
+      <div class="tape-rows" id="tape"><div class="tape-empty">Your strokes print here in steno order: STKPWHR AO*EU FRPBLGTSDZ</div></div>
+    </section>
+    <section class="score">
+      <h2>This session</h2>
+      <dl>
+        <dt>Correct</dt><dd id="s-ok">0</dd>
+        <dt>Missed</dt><dd id="s-miss">0</dd>
+        <dt>Accuracy</dt><dd id="s-acc">–</dd>
+        <dt>Streak</dt><dd id="s-streak">0</dd>
+      </dl>
+    </section>
+  </div>
+
+  <details>
+    <summary>Where your hands go</summary>
+    <ul>
+      <li>Rest your fingers on the normal home row: left hand on <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>, right hand on <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> <kbd>;</kbd>. Those are the bottom steno row. Reach up one row for the top steno row.</li>
+      <li>Thumbs do the vowels. Left thumb sits between <kbd>C</kbd> and <kbd>V</kbd> (A and O). Right thumb sits between <kbd>N</kbd> and <kbd>M</kbd> (E and U).</li>
+      <li>Each finger owns one column. When a stroke needs both keys in a column, like T and K, press the gap between the two keys with that one finger.</li>
+      <li>A stroke is a chord. Press every key in it, in any order, then let go of all of them. The stroke is read when the last key comes up.</li>
+      <li>Left S is on both <kbd>Q</kbd> and <kbd>A</kbd>. The star is on <kbd>T</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>H</kbd>. Use whichever is free.</li>
+      <li>Mac keyboards sometimes drop a key when many are held at once. If a stroke keeps coming out short, switch on “One key at a time”: tap the keys one after another, then press <kbd>Space</kbd> to send the stroke. <kbd>Esc</kbd> clears it.</li>
+      <li>If Plover is running, turn its output off while you practice here, or it will swallow the keys.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+(function () {
+  // ---- Steno model -------------------------------------------------------
+  const ORDER = ['S-','T-','K-','P-','W-','H-','R-','A','O','*','E','U','-F','-R','-P','-B','-L','-G','-T','-S','-D','-Z'];
+  const LET = ORDER.map(k => k.replace('-', ''));
+  const CODE2STENO = {
+    KeyQ:'S-', KeyA:'S-', KeyW:'T-', KeyS:'K-', KeyE:'P-', KeyD:'W-', KeyR:'H-', KeyF:'R-',
+    KeyC:'A', KeyV:'O', KeyT:'*', KeyG:'*', KeyY:'*', KeyH:'*', KeyN:'E', KeyM:'U',
+    KeyU:'-F', KeyJ:'-R', KeyI:'-P', KeyK:'-B', KeyO:'-L', KeyL:'-G', KeyP:'-T',
+    Semicolon:'-S', BracketLeft:'-D', Quote:'-Z'
+  };
+  const STENO2CODES = {};
+  for (const c in CODE2STENO) (STENO2CODES[CODE2STENO[c]] = STENO2CODES[CODE2STENO[c]] || []).push(c);
+  STENO2CODES['S-'] = ['KeyA', 'KeyQ'];
+
+  const FINGER = {
+    KeyQ:['Left pinky','pinky'], KeyA:['Left pinky','pinky'], KeyW:['Left ring','ring'], KeyS:['Left ring','ring'],
+    KeyE:['Left middle','middle'], KeyD:['Left middle','middle'], KeyR:['Left index','index'], KeyF:['Left index','index'],
+    KeyT:['Left index','index'], KeyG:['Left index','index'], KeyC:['Left thumb','thumb'], KeyV:['Left thumb','thumb'],
+    KeyN:['Right thumb','thumb'], KeyM:['Right thumb','thumb'], KeyY:['Right index','index'], KeyH:['Right index','index'],
+    KeyU:['Right index','index'], KeyJ:['Right index','index'], KeyI:['Right middle','middle'], KeyK:['Right middle','middle'],
+    KeyO:['Right ring','ring'], KeyL:['Right ring','ring'], KeyP:['Right pinky','pinky'], Semicolon:['Right pinky','pinky'],
+    BracketLeft:['Right pinky','pinky'], Quote:['Right pinky','pinky']
+  };
+  const FINGER_ORDER = ['Left pinky','Left ring','Left middle','Left index','Left thumb','Right thumb','Right index','Right middle','Right ring','Right pinky'];
+
+  function parseStroke(s) {
+    let i = 0; const set = new Set();
+    for (const ch of s) {
+      if (ch === '-') { i = Math.max(i, 12); continue; }
+      while (i < ORDER.length && LET[i] !== ch) i++;
+      if (i >= ORDER.length) throw new Error('Bad stroke ' + s);
+      set.add(ORDER[i]); i++;
+    }
+    return set;
+  }
+  function parts(set) {
+    const pick = (a, b) => ORDER.slice(a, b).filter(k => set.has(k)).map(k => k.replace('-', '')).join('');
+    return { left: pick(0, 7), vowels: pick(7, 9) + pick(10, 12), star: set.has('*'), right: pick(12, 22), mid: pick(7, 12) };
+  }
+  function formatStroke(set) {
+    const p = parts(set);
+    return p.left + p.mid + (!p.mid && p.right ? '-' : '') + p.right;
+  }
+  function sameSet(a, b) { if (a.size !== b.size) return false; for (const x of a) if (!b.has(x)) return false; return true; }
+
+  // Sound breakdown shown under each word
+  const LEFTC = [['SKWR','j'],['TKPW','g'],['TPHR','fl'],['TPH','n'],['KWR','y'],['PHR','pl'],['KHR','cl'],['SHR','sl'],['TK','d'],['PW','b'],['HR','l'],['TP','f'],['PH','m'],['KH','ch'],['SH','sh'],['TH','th'],['SR','v'],['KW','qu']];
+  const RIGHTC = [['PBLG','j'],['PBG','ng'],['FP','ch'],['RB','sh'],['PB','n'],['PL','m'],['BG','k']];
+  const VOW = { AOEU:'long i', AEU:'long a', AOE:'long e', AOU:'long u', OEU:'oy', AO:'oo', AU:'aw', OU:'ow', OE:'long o', EU:'short i', A:'a', O:'o', E:'e', U:'u' };
+  function greedy(str, table) {
+    const out = [];
+    while (str) {
+      const m = table.find(t => str.startsWith(t[0]));
+      if (m) { out.push(m); str = str.slice(m[0].length); }
+      else { out.push([str[0], str[0].toLowerCase()]); str = str.slice(1); }
+    }
+    return out;
+  }
+  function breakdown(set) {
+    const p = parts(set); const out = greedy(p.left, LEFTC);
+    if (p.vowels) out.push([p.vowels, VOW[p.vowels] || p.vowels.toLowerCase()]);
+    if (p.star && p.right === 'T') out.push(['*T', 'th']);
+    else { if (p.star) out.push(['*', 'star']); greedy(p.right, RIGHTC).forEach(x => out.push(['-' + x[0], x[1]])); }
+    return out;
+  }
+
+  // ---- Lessons -----------------------------------------------------------
+  // item format: "shown:STROKE" or "shown:STROKE:note"
+  const LESSONS = [
+    { name: '1 · Left hand keys', kind: 'keys',
+      about: 'Seven keys start a stroke: S T K P W H R. Four fingers cover two rows, so each finger owns a top key and a bottom key. The last three items use one finger on both rows.',
+      items: 'S:S:left pinky|T:T:left ring, top row|K:K:left ring, home row|P:P:left middle, top row|W:W:left middle, home row|H:H:left index, top row|R:R:left index, home row|T + K:TK:left ring on the gap between both rows|P + W:PW:left middle on the gap|H + R:HR:left index on the gap' },
+    { name: '2 · Thumbs: vowels and star', kind: 'keys',
+      about: 'The thumbs press the four vowel keys. Left thumb has A and O, right thumb has E and U. The star in the middle is reached by either index finger.',
+      items: 'A:A:left thumb|O:O:left thumb|E:E:right thumb|U:U:right thumb|A + O:AO:left thumb on both|E + U:EU:right thumb on both|*:*:either index finger, reaching inward' },
+    { name: '3 · Right hand keys', kind: 'keys',
+      about: 'Ten keys end a stroke: F R P B L G T S D Z. The right pinky covers two columns, so it slides out for D and Z.',
+      items: 'F:-F:right index, top row|R:-R:right index, home row|P:-P:right middle, top row|B:-B:right middle, home row|L:-L:right ring, top row|G:-G:right ring, home row|T:-T:right pinky, top row|S:-S:right pinky, home row|D:-D:right pinky, reaching out|Z:-Z:right pinky, reaching out|F + R:-FR:right index on the gap|P + B:-PB:right middle on the gap|L + G:-LG:right ring on the gap' },
+    { name: '4 · First words', kind: 'words',
+      about: 'One stroke is one syllable: starting consonants on the left hand, vowel on the thumbs, ending consonants on the right hand, all pressed together.',
+      items: 'sat:SAT|pat:PAT|tap:TAP|top:TOP|pot:POT|hot:HOT|rat:RAT|wet:WET|set:SET|pet:PET|cut:KUT|cup:KUP|cap:KAP|cab:KAB|tub:TUB|rub:RUB|hug:HUG|rug:RUG|tag:TAG|red:RED|sad:SAD|pad:PAD|sell:SEL|tell:TEL|well:WEL|car:KAR|step:STEP|stop:STOP|trap:TRAP|spot:SPOT|swap:SWAP|press:PRES|crab:KRAB|crop:KROP|puff:PUF|tough:TUF|star:STAR|hard:HARD|card:KARD|part:PART|start:START|sport:SPORT|held:HELD|help:HELP' },
+    { name: '5 · Missing letters, left hand', kind: 'keys',
+      about: 'The left hand has no key for D, B, L, F, M, N, G, J, Y and others. Each one is a small chord of the keys you already know.',
+      items: 'D:TK:as in dog|B:PW:as in bat|L:HR:as in leg|F:TP:as in fog|M:PH:as in map|N:TPH:as in net|G:TKPW:as in got|J:SKWR:as in jet|Y:KWR:as in yes|CH:KH:as in chop|SH:SH:as in shop|TH:TH:as in thud|V:SR:as in vet' },
+    { name: '6 · Words with those letters', kind: 'words',
+      about: 'The same chords inside real words. Read the breakdown under each word until the shapes feel familiar.',
+      items: 'dog:TKOG|dad:TKAD|bad:PWAD|bed:PWED|bug:PWUG|bat:PWAT|let:HRET|leg:HREG|lap:HRAP|fat:TPAT|fed:TPED|fog:TPOG|mad:PHAD|map:PHAP|mud:PHUD|net:TPHET|nut:TPHUT|nap:TPHAP|got:TKPWOT|gap:TKPWAP|gas:TKPWAS|jet:SKWRET|jug:SKWRUG|job:SKWROB|yes:KWRES|yet:KWRET|chat:KHAT|chop:KHOP|shed:SHED|shop:SHOP|thud:THUD|vat:SRAT|vet:SRET' },
+    { name: '7 · More vowels', kind: 'words',
+      about: 'Four vowel keys make every vowel sound by combining. Short i is EU. Long vowels add keys: AEU for long a, AOE for long e, AOEU for long i, OE for long o, AOU for long u.',
+      items: 'sit:SEUT|hit:HEUT|pig:PEUG|big:PWEUG|did:TKEUD|lip:HREUP|tip:TEUP|late:HRAEUT|made:PHAEUD|tape:TAEUP|gate:TKPWAEUT|safe:SAEUF|keep:KAOEP|deep:TKAOEP|feel:TPAOEL|sleep:SHRAOEP|tree:TRAOE|free:TPRAOE|three:THRAOE|ride:RAOEUD|side:SAOEUD|bite:PWAOEUT|life:HRAOEUF|pipe:PAOEUP|hide:HAOEUD|hope:HOEP|rope:ROEP|boat:PWOET|load:HROED|goat:TKPWOET|vote:SROET|cute:KAOUT|tube:TAOUB|rule:RAOUL|food:TPAOD|pool:PAOL|tool:TAOL|roof:RAOF|boot:PWAOT|out:OUT|loud:HROUD|shout:SHOUT|proud:PROUD|law:HRAU|saw:SAU|paw:PAU|haul:HAUL|boy:PWOEU|toy:TOEU|boil:PWOEUL|joy:SKWROEU' },
+    { name: '8 · Missing letters, right hand', kind: 'keys',
+      about: 'The right hand builds its missing ending sounds the same way: N is PB, M is PL, K is BG. The star plus T makes an ending TH.',
+      items: 'N:-PB:as in run|M:-PL:as in ham|K:-BG:as in back|J:-PBLG:as in judge|CH:-FP:as in much|SH:-RB:as in fish|NG:-PBG:as in sing|TH:*T:as in bath' },
+    { name: '9 · Words with right-hand chords', kind: 'words',
+      about: 'Full words that use chords on both hands. These are the longest strokes so far. Go slowly and place every finger before pressing.',
+      items: 'man:PHAPB|ten:TEPB|run:RUPB|pen:PEPB|fun:TPUPB|win:WEUPB|ham:HAPL|gum:TKPWUPL|jam:SKWRAPL|back:PWABG|duck:TKUBG|neck:TPHEBG|pick:PEUBG|lock:HROBG|rock:ROBG|judge:SKWRUPBLG|edge:EPBLG|badge:PWAPBLG|much:PHUFP|catch:KAFP|rich:REUFP|fish:TPEURB|wish:WEURB|rush:RURB|cash:KARB|sing:SEUPBG|long:HROPBG|ring:REUPBG|king:KEUPBG|bath:PWA*T|path:PA*T|math:PHA*T|time:TAOEUPL|home:HOEPL|name:TPHAEUPL|like:HRAOEUBG|make:PHAEUBG|take:TAEUBG|line:HRAOEUPB|phone:TPOEPB|moon:PHAOPB' },
+    { name: '10 · Common word briefs', kind: 'briefs',
+      about: 'The most common words get short memorised strokes called briefs. These follow the standard Plover dictionary, so they carry over when you move to Plover.',
+      items: 'the:-T|of:-F|to:TO|and:SKP|a:AEU|in:TPH|is:S|it:T|that:THA|you:U|for:TPOR|was:WAS|with:W|he:HE|be:-B|are:R|have:SR|this:TH|will:HR|can:K|had:H|not:TPHOT|but:PWUT|were:WR|they:THE|we:WE|what:WHA|from:TPR|there:THR|would:WO|could:KO|should:SHO|if:TP|do:TKO|go:TKPW|as:AZ|at:AT|or:OR|on:OPB|I:EU|she:SHE|when:WHEPB|by:PWEU|me:PHE|my:PHEU|so:SO|up:UP|out:OUT|about:PW|them:THEPL|then:THEPB|than:THAPB|who:WHO|him:HEUPL|his:HEUS|her:HER|an:APB|has:HAS|no:TPHO' },
+    { name: 'Free play', kind: 'free',
+      about: 'No target. Press any chord and see which steno keys it makes. Good for finding the home position without looking down.',
+      items: '' }
+  ];
+  LESSONS.forEach(L => {
+    L.list = L.items ? L.items.split('|').map(s => { const [w, st, note] = s.split(':'); return { w, set: parseStroke(st), note: note || '' }; }) : [];
+  });
+
+  // ---- Keyboard drawing --------------------------------------------------
+  const ROWS = [
+    [['`'],['1'],['2'],['3'],['4'],['5'],['6'],['7'],['8'],['9'],['0'],['-'],['='],['delete',1.5]],
+    [['tab',1.5],['Q','KeyQ'],['W','KeyW'],['E','KeyE'],['R','KeyR'],['T','KeyT'],['Y','KeyY'],['U','KeyU'],['I','KeyI'],['O','KeyO'],['P','KeyP'],['[','BracketLeft'],[']'],['\\']],
+    [['caps',1.75],['A','KeyA'],['S','KeyS'],['D','KeyD'],['F','KeyF'],['G','KeyG'],['H','KeyH'],['J','KeyJ'],['K','KeyK'],['L','KeyL'],[';','Semicolon'],["'",'Quote'],['return',1.75]],
+    [['shift',2.25],['Z'],['X'],['C','KeyC'],['V','KeyV'],['B'],['N','KeyN'],['M','KeyM'],[','],['.'],['/'],['shift',2.25]],
+    [['fn'],['⌃'],['⌥'],['⌘',1.25],['space',5],['⌘',1.25],['⌥'],['',3]]
+  ];
+  const deck = document.getElementById('deck');
+  const keyEls = {};
+  ROWS.forEach(r => {
+    const row = document.createElement('div'); row.className = 'row';
+    r.forEach(([label, x]) => {
+      const el = document.createElement('div'); el.className = 'key';
+      if (typeof x === 'number') el.style.setProperty('--u', x);
+      if (typeof x === 'string') {
+        el.classList.add('steno');
+        el.style.setProperty('--f', 'var(--f-' + FINGER[x][1] + ')');
+        const b = document.createElement('b'); b.textContent = CODE2STENO[x].replace('-', '');
+        const i = document.createElement('i'); i.textContent = label;
+        el.append(i, b); keyEls[x] = el;
+      } else el.textContent = label;
+      row.appendChild(el);
+    });
+    deck.appendChild(row);
+  });
+
+  // ---- State -------------------------------------------------------------
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('steno.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('steno.' + k, JSON.stringify(v)); } catch (e) {} }
+  };
+  let lessonIx = Math.min(store.get('lesson', 0), LESSONS.length - 1);
+  let queue = [], pos = 0, reveal = false;
+  const down = new Set(), chord = new Set();
+  const stats = { ok: 0, miss: 0, streak: 0 };
+  let flashTimer = 0;
+
+  const sel = $('lesson');
+  function markLesson() { [...sel.children].forEach((b, i) => b.setAttribute('aria-pressed', i === lessonIx)); }
+  LESSONS.forEach((L, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = L.name;
+    b.addEventListener('click', () => { lessonIx = i; store.set('lesson', i); b.blur(); markLesson(); startLesson(false); setMsg(idleMsg()); });
+    sel.appendChild(b);
+  });
+  markLesson();
+  $('hints').checked = store.get('hints', true);
+  $('roll').checked = store.get('roll', false);
+
+  const lesson = () => LESSONS[lessonIx];
+  const current = () => lesson().list.length ? lesson().list[queue[pos]] : null;
+  const showAnswer = () => $('hints').checked || reveal;
+
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function startLesson(shuffled) {
+    queue = lesson().list.map((_, i) => i); if (shuffled) shuffle(queue);
+    pos = 0; reveal = false; chord.clear(); down.clear();
+    $('about').textContent = lesson().about;
+    render();
+  }
+
+  // Which physical key to light for each steno key in the target
+  function targetCodes(set) {
+    const primary = new Set(), alt = new Set();
+    set.forEach(k => {
+      let codes = STENO2CODES[k];
+      if (k === '*') {
+        const leftBusy = set.has('H-') || set.has('R-'), rightBusy = set.has('-F') || set.has('-R');
+        codes = leftBusy && !rightBusy ? ['KeyH', 'KeyY', 'KeyG', 'KeyT'] : ['KeyG', 'KeyT', 'KeyH', 'KeyY'];
+      }
+      primary.add(codes[0]); codes.slice(1).forEach(c => alt.add(c));
+    });
+    return { primary, alt };
+  }
+
+  function setMsg(text, cls) {
+    const m = $('msg'); m.className = 'msg' + (cls ? ' ' + cls : ''); m.textContent = text;
+    const p = $('prompt'); p.classList.remove('ok', 'miss'); clearTimeout(flashTimer);
+    if (cls) { p.classList.add(cls); flashTimer = setTimeout(() => p.classList.remove(cls), 700); }
+  }
+  function idleMsg() {
+    if (!document.hasFocus()) return 'Click anywhere on this page first, then type.';
+    if ($('roll').checked) return 'Tap the keys one after another, then press Space.';
+    return lesson().kind === 'free' ? 'Press any keys together, then let go.' : 'Press the lit keys together, then let go.';
+  }
+
+  function paintKeys() {
+    const item = current();
+    const t = item && showAnswer() ? targetCodes(item.set) : { primary: new Set(), alt: new Set() };
+    for (const code in keyEls) {
+      const el = keyEls[code], isDown = chord.has(code);
+      el.classList.toggle('target', t.primary.has(code));
+      el.classList.toggle('alt', t.alt.has(code));
+      el.classList.toggle('down', isDown);
+      el.classList.toggle('hit', isDown && (!item || item.set.has(CODE2STENO[code])));
+      el.classList.toggle('wrong', isDown && !!item && !item.set.has(CODE2STENO[code]));
+    }
+    // finger list
+    const box = $('fingers'); box.textContent = '';
+    if (!item || !showAnswer()) return;
+    const by = {};
+    t.primary.forEach(code => (by[FINGER[code][0]] = by[FINGER[code][0]] || []).push(code));
+    FINGER_ORDER.filter(f => by[f]).forEach(f => {
+      const chip = document.createElement('span'); chip.className = 'fchip';
+      chip.style.setProperty('--f', 'var(--f-' + FINGER[by[f][0]][1] + ')');
+      chip.append(f);
+      const k = document.createElement('kbd');
+      k.textContent = by[f].map(c => keyEls[c].querySelector('i').textContent).join(' + ');
+      chip.appendChild(k); box.appendChild(chip);
+    });
+  }
+
+  function render() {
+    const L = lesson(), item = current();
+    $('chips').textContent = '';
+    if (!item) {
+      $('count').textContent = 'free play'; $('word').textContent = '⌨'; $('note').textContent = ''; $('stroke').textContent = '';
+    } else {
+      $('count').textContent = (pos + 1) + ' / ' + queue.length;
+      $('word').textContent = item.w;
+      $('note').textContent = L.kind === 'briefs' ? 'brief' : item.note;
+      $('stroke').textContent = showAnswer() ? formatStroke(item.set) : '· · ·';
+      if (L.kind === 'words' && showAnswer()) breakdown(item.set).forEach(([k, s]) => {
+        const c = document.createElement('span'); c.className = 'chip';
+        const code = document.createElement('code'); code.textContent = k; c.append(code, s); $('chips').appendChild(c);
+      });
+    }
+    $('s-ok').textContent = stats.ok; $('s-miss').textContent = stats.miss; $('s-streak').textContent = stats.streak;
+    const n = stats.ok + stats.miss; $('s-acc').textContent = n ? Math.round(100 * stats.ok / n) + '%' : '–';
+    paintKeys();
+  }
+
+  function tapeRow(set, label, miss) {
+    const tape = $('tape'); const empty = tape.querySelector('.tape-empty'); if (empty) empty.remove();
+    const row = document.createElement('div'); row.className = 'trow' + (miss ? ' miss' : '');
+    const cols = document.createElement('div'); cols.className = 'cols';
+    ORDER.forEach((k, i) => { const s = document.createElement('span'); s.textContent = set.has(k) ? LET[i] : ''; cols.appendChild(s); });
+    const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = label;
+    row.append(cols, lbl); tape.appendChild(row);
+    while (tape.children.length > 7) tape.firstChild.remove();
+  }
+
+  function commit() {
+    const set = new Set([...chord].map(c => CODE2STENO[c]));
+    chord.clear(); down.clear();
+    if (!set.size) return;
+    const item = current(), typed = formatStroke(set);
+    if (!item) { tapeRow(set, '', false); $('stroke').textContent = typed; setMsg(idleMsg()); paintKeys(); return; }
+    if (sameSet(set, item.set)) {
+      stats.ok++; stats.streak++; tapeRow(set, item.w, false);
+      reveal = false; pos++;
+      let text = 'Correct: ' + item.w;
+      if (pos >= queue.length) { startLessonPass(); text = 'Lesson complete. Going round again in a new order.'; }
+      render(); setMsg(text, 'ok');
+    } else {
+      stats.miss++; stats.streak = 0; reveal = true; tapeRow(set, 'missed ' + item.w, true);
+      render(); setMsg('You pressed ' + typed + '. This one is ' + formatStroke(item.set) + '. Try again.', 'miss');
+    }
+  }
+  function startLessonPass() { queue = shuffle(lesson().list.map((_, i) => i)); pos = 0; }
+
+  // ---- Input -------------------------------------------------------------
+  function inControl(e) { const t = e.target && e.target.tagName; return t === 'SELECT' || t === 'INPUT' || t === 'SUMMARY'; }
+  window.addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const roll = $('roll').checked;
+    if (e.code === 'Escape') { chord.clear(); down.clear(); paintKeys(); return; }
+    if (inControl(e) && !CODE2STENO[e.code]) return;
+    if (e.code === 'Space') { e.preventDefault(); if (roll) commit(); return; }
+    if (e.code === 'Backspace' && roll) { e.preventDefault(); chord.clear(); paintKeys(); return; }
+    if (!CODE2STENO[e.code]) return;
+    e.preventDefault();
+    if (e.repeat) return;
+    if (roll && chord.has(e.code)) chord.delete(e.code); else chord.add(e.code);
+    down.add(e.code);
+    paintKeys();
+  });
+  window.addEventListener('keyup', e => {
+    if (!down.delete(e.code)) return;
+    if (!$('roll').checked && down.size === 0 && chord.size) commit();
+  });
+  window.addEventListener('blur', () => { chord.clear(); down.clear(); paintKeys(); setMsg(idleMsg()); });
+  window.addEventListener('focus', () => setMsg(idleMsg()));
+
+  $('hints').addEventListener('change', e => { store.set('hints', e.target.checked); e.target.blur(); render(); });
+  $('roll').addEventListener('change', e => { store.set('roll', e.target.checked); e.target.blur(); chord.clear(); down.clear(); render(); setMsg(idleMsg()); });
+
+  startLesson(false);
+  setMsg(idleMsg());
+})();
+</script>
