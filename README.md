@@ -6,7 +6,7 @@ for each stroke. Strokes follow the standard Plover layout.
 
 ## Files
 
-- `steno-trainer.html` — the whole trainer: styles, lessons and logic in one page.
+- `index.html` — the whole trainer: styles, lessons and logic in one page.
 - `macos/main.swift` — a small native window that shows the page.
 - `macos/Info.plist` — app bundle settings.
 - `build.sh` — builds the Mac app.
@@ -23,5 +23,5 @@ The app is written to `dist/Steno Finger Trainer.app`. Drag it into Applications
 
 ## Editing lessons
 
-Lessons live in the `LESSONS` list in `steno-trainer.html`. Each item is
+Lessons live in the `LESSONS` list in `index.html`. Each item is
 `shown:STROKE` or `shown:STROKE:note`, separated by `|`.
