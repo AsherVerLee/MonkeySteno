@@ -425,8 +425,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0
       '@fortawesome/fontawesome-free':
-        specifier: 5.15.4
-        version: 5.15.4
+        specifier: 7.3.1
+        version: 7.3.1
       '@monkeytype/oxlint-config':
         specifier: workspace:*
         version: link:../packages/oxlint-config
@@ -513,7 +513,7 @@ importers:
         version: 13.15.1(encoding@0.1.13)(supports-color@10.2.2)
       fontawesome-subset:
         specifier: 4.6.0
-        version: 4.6.0(@fortawesome/fontawesome-free@5.15.4)
+        version: 4.6.0(@fortawesome/fontawesome-free@7.3.1)
       happy-dom:
         specifier: 20.8.9
         version: 20.8.9
@@ -2548,8 +2548,8 @@ packages:
   '@firebase/webchannel-wrapper@1.0.6':
     resolution: {integrity: sha512-Vr/Mqu79dMwGRAyGbJ4uN4+BtXB3/mRTdzetD1daWNeG8QaWuzhhbG77GltO5c0yYmYls8i250iX73624GJd7Q==}
 
-  '@fortawesome/fontawesome-free@5.15.4':
-    resolution: {integrity: sha512-eYm8vijH/hpzr/6/1CJ/V/Eb1xQFW2nnUKArb3z+yUWv7HTwj6M7SP957oMjfZjAHU6qpoNc2wQvIxBLWYa/Jg==}
+  '@fortawesome/fontawesome-free@7.3.1':
+    resolution: {integrity: sha512-wmglKKPDIkgV3aWlZzWECCPoGIkYCulzBwxG9+w7rc5BGapZ6cPMpoPOT8k36J0Ni7PPX6c/rsoMWfS4d1MUMg==}
     engines: {node: '>=6'}
 
   '@google-cloud/cloud-sql-connector@1.3.3':
@@ -6921,6 +6921,7 @@ packages:
   eslint@9.39.1:
     resolution: {integrity: sha512-BhHmn2yNOFA9H9JmmIVKJmd288g9hrVRDkdoIgRCRuSySRUHH7r/DI6aAXW9T1WwUuY3DFgrcaqB+deURBLR5g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -9838,6 +9839,7 @@ packages:
   prom-client@15.1.3:
     resolution: {integrity: sha512-6ZiOBfCywsD4k1BN9IX0uZhF+tJkV8q8llP64G5Hajs4JOeVLPCwpPVcpXy3BwYiUGgyJzsJJQeOIv7+hDSq8g==}
     engines: {node: ^16 || ^18 || >=20}
+    deprecated: prom-client has been replaced by @prometheus-io/client
 
   promise-breaker@6.0.0:
     resolution: {integrity: sha512-BthzO9yTPswGf7etOBiHCVuugs2N01/Q/94dIPls48z2zCmrnDptUUZzfIb+41xq0MnYZ/BzmOd6ikDR4ibNZA==}
@@ -13844,7 +13846,7 @@ snapshots:
 
   '@firebase/webchannel-wrapper@1.0.6': {}
 
-  '@fortawesome/fontawesome-free@5.15.4': {}
+  '@fortawesome/fontawesome-free@7.3.1': {}
 
   '@google-cloud/cloud-sql-connector@1.3.3(encoding@0.1.13)(supports-color@10.2.2)':
     dependencies:
@@ -18952,14 +18954,14 @@ snapshots:
     optionalDependencies:
       debug: 4.3.6(supports-color@5.5.0)
 
-  fontawesome-subset@4.6.0(@fortawesome/fontawesome-free@5.15.4):
+  fontawesome-subset@4.6.0(@fortawesome/fontawesome-free@7.3.1):
     dependencies:
       lodash: 4.18.1
       mkdirp: 2.1.6
       subset-font: 2.3.0
       yaml: 2.8.3
     optionalDependencies:
-      '@fortawesome/fontawesome-free': 5.15.4
+      '@fortawesome/fontawesome-free': 7.3.1
 
   fontverter@2.0.0:
     dependencies:
