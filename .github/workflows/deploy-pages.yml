@@ -1,0 +1,66 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      # no firebase project or backend: the site runs without accounts
+      - name: Create firebase config
+        run: cp frontend/src/ts/constants/firebase-config-example.ts frontend/src/ts/constants/firebase-config-live.ts
+
+      - name: Build frontend
+        run: pnpm build-fe
+        env:
+          RECAPTCHA_SITE_KEY: none
+          BACKEND_URL: https://backend.invalid
+
+      # pages has no rewrites, so serve the app for /settings, /about, etc.
+      - name: Add single page app fallback
+        run: cp frontend/dist/index.html frontend/dist/404.html
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
